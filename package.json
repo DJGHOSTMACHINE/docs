@@ -2,9 +2,9 @@
   "name": "docs.github.com",
   "private": true,
   "main": "server.js",
-  "author": {
-    "email": "opensource+docs@github.com",
-    "name": "GitHub",
+  "author": {ZachryTylerWood}
+    "email": "Zachryiixixiiwood@gmail.com",
+    "name": "ZachryTylerWood",
     "url": "https://github.com/github/docs"
   },
   "license": "(MIT AND CC-BY-4.0)",
