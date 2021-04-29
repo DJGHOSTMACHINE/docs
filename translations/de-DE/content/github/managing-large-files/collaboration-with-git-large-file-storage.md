@@ -7,13 +7,14 @@ redirect_from:
 versions:
   free-pro-team: '*'
   enterprise-server: '*'
+  github-ae: '*'
 ---
 
 Wenn Mitarbeiter an Ihrem Repository {% data variables.large_files.product_name_short %} nicht installiert haben, haben sie keinen Zugriff auf die große Originaldatei. Wenn sie versuchen, Dein Repository zu klonen, rufen sie nur die Pointer-Dateien ab und haben keinen Zugriff auf die tatsächlichen Daten.
 
 {% tip %}
 
-**Tipp:** Um Benutzer zu unterstützen, die {% data variables.large_files.product_name_short %} nicht aktiviert haben, empfehlen wir Dir, Richtlinien für Repository-Mitwirkende festzulegen, in denen das Arbeiten mit großen Dateien erläutert wird. Du kannst Mitarbeiter beispielsweise bitten, große Dateien nicht zu ändern oder Änderungen auf einen Filesharing-Dienst wie [Dropbox](http://www.dropbox.com/) oder <a href="https://drive.google.com/" data-proofer-ignore>Google Drive</a> hochzuladen. Weitere Informationen findest Du unter „[Richtlinien für Repository-Mitarbeiter festlegen](/github/building-a-strong-community/setting-guidelines-for-repository-contributors).“
+**Tipp:** Um Benutzer zu unterstützen, die {% data variables.large_files.product_name_short %} nicht aktiviert haben, empfehlen wir Dir, Richtlinien für Repository-Mitwirkende festzulegen, in denen das Arbeiten mit großen Dateien erläutert wird. Du kannst Mitarbeiter beispielsweise bitten, große Dateien nicht zu ändern oder Änderungen auf einen Filesharing-Dienst wie [Dropbox](http://www.dropbox.com/) oder <a href="https://drive.google.com/" data-proofer-ignore>Google Drive</a> hochzuladen. Weitere Informationen findest Du unter „[Richtlinien für Repository-Mitarbeiter festlegen](/communities/setting-up-your-project-for-healthy-contributions/setting-guidelines-for-repository-contributors).“
 
 {% endtip %}
 

@@ -1,5 +1,7 @@
 import murmur from 'imurmurhash'
 import { getUserEventsId, sendEvent } from './events'
+import toggleImages from './toggle-images'
+// import h from './hyperscript'
 
 const TREATMENT = 'TREATMENT'
 const CONTROL = 'CONTROL'
@@ -10,7 +12,7 @@ export function bucket (test) {
   return hash % 2 ? TREATMENT : CONTROL
 }
 
-export async function sendSuccess (test) {
+export function sendSuccess (test) {
   return sendEvent({
     type: 'experiment',
     experiment_name: test,
@@ -19,26 +21,23 @@ export async function sendSuccess (test) {
   })
 }
 
-const xmlns = 'http://www.w3.org/2000/svg'
+function applyTreatment () {
+  // Treatment-specific options.
+  const hideImagesByDefault = true
+  const focusButtonByDefault = true
 
-export function h (tagName, attributes = {}, children = []) {
-  const el = ['svg', 'path'].includes(tagName)
-    ? document.createElementNS(xmlns, tagName)
-    : document.createElement(tagName)
-  Object.entries(attributes).forEach(
-    ([key, value]) => el.setAttribute(key, value)
-  )
-  children.forEach(child =>
-    typeof child === 'string'
-      ? el.append(document.createTextNode(child))
-      : el.append(child)
-  )
-  return el
+  // Run toggleImages a second time on each page, but with treatment defaults.
+  toggleImages(hideImagesByDefault, focusButtonByDefault)
 }
 
 export default function () {
-  // const testName = '$test-name$'
-  // const xbucket = bucket(testName)
-  // if (xbucket === TREATMENT) { ... }
-  // x.addEventListener('click', evt => evt.preventDefault(); await sendSuccess(testName); evt())
+  const testName = 'toggle-images'
+  const xbucket = bucket(testName)
+
+  const toggleImagesBtn = document.getElementById('js-toggle-images')
+  if (!toggleImagesBtn) return
+
+  toggleImagesBtn.addEventListener('click', () => { sendSuccess(testName) })
+
+  if (xbucket === TREATMENT) applyTreatment()
 }

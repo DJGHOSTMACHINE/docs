@@ -27,11 +27,10 @@ export function getUserEventsId () {
   return cookieValue
 }
 
-export async function sendEvent ({
+export function sendEvent ({
   type,
   version = '1.0.0',
-  page_render_duration,
-  exit_page_id,
+  exit_render_duration,
   exit_first_paint,
   exit_dom_interactive,
   exit_dom_complete,
@@ -46,7 +45,8 @@ export async function sendEvent ({
   survey_email,
   experiment_name,
   experiment_variation,
-  experiment_success
+  experiment_success,
+  clipboard_operation
 }) {
   const body = {
     _csrf: getCsrf(),
@@ -59,9 +59,11 @@ export async function sendEvent ({
       user: getUserEventsId(),
       version,
       created: new Date().toISOString(),
+      page_event_id: pageEventId,
 
       // Content information
       path: location.pathname,
+      hostname: location.hostname,
       referrer: document.referrer,
       search: location.search,
       href: location.href,
@@ -79,10 +81,10 @@ export async function sendEvent ({
     },
 
     // Page event
-    page_render_duration,
+    // No extra fields
 
     // Exit event
-    exit_page_id,
+    exit_render_duration,
     exit_first_paint,
     exit_dom_interactive,
     exit_dom_complete,
@@ -107,7 +109,10 @@ export async function sendEvent ({
     // Experiment event
     experiment_name,
     experiment_variation,
-    experiment_success
+    experiment_success,
+
+    // Clipboard event
+    clipboard_operation
   }
   const blob = new Blob([JSON.stringify(body)], { type: 'application/json' })
   navigator.sendBeacon('/events', blob)
@@ -120,7 +125,7 @@ function getPerformance () {
   )
   const nav = performance?.getEntriesByType('navigation')?.[0]
   return {
-    firstContentfulPaint: paint ? paint / 1000 : undefined,
+    firstContentfulPaint: paint ? paint.startTime / 1000 : undefined,
     domInteractive: nav ? nav.domInteractive / 1000 : undefined,
     domComplete: nav ? nav.domComplete / 1000 : undefined,
     render: nav ? (nav.responseEnd - nav.requestStart) / 1000 : undefined
@@ -141,19 +146,19 @@ function trackScroll () {
   if (scrollPosition > maxScrollY) maxScrollY = scrollPosition
 }
 
-async function sendExit () {
+function sendExit () {
   if (sentExit) return
   if (document.visibilityState !== 'hidden') return
-  if (!pageEventId) return
   sentExit = true
   const {
+    render,
     firstContentfulPaint,
     domInteractive,
     domComplete
   } = getPerformance()
   return sendEvent({
     type: 'exit',
-    exit_page_id: pageEventId,
+    exit_render_duration: render,
     exit_first_paint: firstContentfulPaint,
     exit_dom_interactive: domInteractive,
     exit_dom_complete: domComplete,
@@ -162,16 +167,67 @@ async function sendExit () {
   })
 }
 
-export default async function initializeEvents () {
-  // Page event
-  const { render } = getPerformance()
-  const pageEvent = await sendEvent({
-    type: 'page',
-    page_render_duration: render
-  })
-
-  // Exit event
+function initPageEvent () {
+  const pageEvent = sendEvent({ type: 'page' })
   pageEventId = pageEvent?.context?.event_id
+}
+
+function initClipboardEvent () {
+  ['copy', 'cut', 'paste'].forEach(verb => {
+    document.documentElement.addEventListener(verb, () => {
+      sendEvent({ type: 'clipboard', clipboard_operation: verb })
+    })
+  })
+}
+
+function initLinkEvent () {
+  document.documentElement.addEventListener('click', evt => {
+    const link = evt.target.closest('a[href^="http"]')
+    if (!link) return
+    sendEvent({
+      type: 'link',
+      link_url: link.href
+    })
+  })
+}
+
+function initExitEvent () {
   window.addEventListener('scroll', trackScroll)
   document.addEventListener('visibilitychange', sendExit)
+}
+
+function initNavigateEvent () {
+  if (!document.querySelector('.sidebar-products')) return
+
+  Array.from(
+    document.querySelectorAll('.sidebar-products details')
+  ).forEach(details => details.addEventListener(
+    'toggle',
+    evt => sendEvent({
+      type: 'navigate',
+      navigate_label: `details ${evt.target.open ? 'open' : 'close'}: ${evt.target.querySelector('summary').innerText}`
+    })
+  ))
+
+  document.querySelector('.sidebar-products').addEventListener('click', evt => {
+    const link = evt.target.closest('a')
+    if (!link) return
+    sendEvent({
+      type: 'navigate',
+      navigate_label: `link: ${link.href}`
+    })
+  })
+}
+
+export default function initializeEvents () {
+  initPageEvent() // must come first
+  initExitEvent()
+  initLinkEvent()
+  initClipboardEvent()
+  initNavigateEvent()
+  // print event in ./print.js
+  // survey event in ./helpfulness.js
+  // experiment event in ./experiment.js
+  // search event in ./search.js
+  // redirect event in middleware/record-redirect.js
 }
